@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>For You Sweetheart ❤️</title>
+  <style>
+    body {
+      background: white;
+      margin: 0;
+      overflow-x: hidden;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      text-align: center;
+    }
+
+    .btn {
+      background: hotpink;
+      color: white;
+      font-size: 28px;
+      padding: 15px 40px;
+      border-radius: 50px;
+      border: none;
+      cursor: pointer;
+      text-shadow: 0 0 10px white;
+      box-shadow: 0 0 20px pink;
+      transition: all 0.3s ease;
+    }
+
+    .caption {
+      margin-top: 10px;
+      font-size: 18px;
+      color: #555;
+    }
+
+    .gift-btn {
+      background: url('https://cdn-icons-png.flaticon.com/512/263/263115.png') no-repeat center/cover;
+      width: 100px;
+      height: 100px;
+      border: none;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .gift-stars {
+      animation: blink 1.2s infinite;
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      top: -15px;
+      left: -15px;
+      background: radial-gradient(circle, #fff6 10%, transparent 11%);
+      background-size: 20px 20px;
+      pointer-events: none;
+    }
+
+    @keyframes blink {
+      0%, 100% {opacity: 1;}
+      50% {opacity: 0.4;}
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .heart {
+      position: relative;
+      width: 300px;
+      height: 270px;
+      margin: 0 auto;
+      transform: scale(1.2);
+    }
+
+    .heart img {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 10px;
+      opacity: 0;
+      animation: fadeIn 0.5s forwards;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    .sparkle-text {
+      font-size: 26px;
+      font-weight: bold;
+      color: hotpink;
+      text-align: center;
+      margin-top: 20px;
+      white-space: nowrap;
+    }
+
+    .emoji-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .emoji-bg span {
+      position: absolute;
+      font-size: 24px;
+      animation: float 10s linear infinite;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(100vh);
+        opacity: 0;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-100vh);
+        opacity: 0;
+      }
+    }
+
+    audio {
+      display: none;
+    }
+
+    .firecracker {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      top: 0;
+      left: 0;
+      z-index: 1000;
+    }
+  </style>
+</head>
+<body>
+
+<div class="emoji-bg" id="emojis"></div>
+
+<div class="center" id="main">
+  <button class="btn" id="sorryBtn">Sorry</button>
+  <div class="caption">Tap on Sorry</div>
+</div>
+
+<div class="center hidden" id="giftContainer">
+  <div class="gift-stars"></div>
+  <button class="gift-btn" id="readyBtn"></button>
+</div>
+
+<div class="center hidden" id="finalContainer">
+  <div class="heart" id="heartShape"></div>
+  <div class="sparkle-text" id="text"></div>
+</div>
+
+<audio id="bgm" src="https://files.catbox.moe/pjmxo8.mp3" autoplay loop></audio>
+<audio id="boom" src="https://www.soundjay.com/mechanical/firecracker-explosion-01.mp3"></audio>
+
+<canvas class="firecracker hidden" id="fireCanvas"></canvas>
+
+<script>
+  const sorryBtn = document.getElementById('sorryBtn');
+  const giftContainer = document.getElementById('giftContainer');
+  const readyBtn = document.getElementById('readyBtn');
+  const main = document.getElementById('main');
+  const finalContainer = document.getElementById('finalContainer');
+  const heartShape = document.getElementById('heartShape');
+  const text = document.getElementById('text');
+  const emojis = document.getElementById('emojis');
+  const boom = document.getElementById('boom');
+  const music = document.getElementById('bgm');
+  const canvas = document.getElementById('fireCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // 💖 emojis floating
+  for (let i = 0; i < 30; i++) {
+    const span = document.createElement('span');
+    span.innerText = '💖';
+    span.style.left = Math.random() * 100 + '%';
+    span.style.top = Math.random() * 100 + '%';
+    span.style.animationDuration = 5 + Math.random() * 10 + 's';
+    emojis.appendChild(span);
+  }
+
+  // 💥 Firecracker Boom
+  function showFirecracker() {
+    canvas.classList.remove('hidden');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    for (let i = 0; i < 60; i++) {
+      explode(Math.random() * canvas.width, Math.random() * canvas.height);
+    }
+    boom.play();
+    setTimeout(() => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      canvas.classList.add('hidden');
+    }, 1500);
+  }
+
+  function explode(x, y) {
+    const particles = 20;
+    for (let i = 0; i < particles; i++) {
+      const angle = Math.random() * 2 * Math.PI;
+      const radius = Math.random() * 30;
+      const px = x + radius * Math.cos(angle);
+      const py = y + radius * Math.sin(angle);
+      ctx.beginPath();
+      ctx.arc(px, py, 3, 0, 2 * Math.PI);
+      ctx.fillStyle = `hsl(${Math.random() * 360}, 100%, 70%)`;
+      ctx.fill();
+    }
+  }
+
+  // Heart shape positions (20 slots)
+  const coords = [
+    [150, 0], [100, 30], [200, 30],
+    [60, 80], [240, 80],
+    [30, 140], [270, 140],
+    [40, 200], [260, 200],
+    [70, 240], [230, 240],
+    [100, 260], [200, 260],
+    [130, 270], [170, 270],
+    [120, 200], [180, 200],
+    [140, 160], [160, 160],
+    [150, 120]
+  ];
+
+  const imageUrls = [
+    "https://i.ibb.co/ZvsszqY/74022-DD7-8-A77-499-B-AD48-B434418-A07-DF.png",
+    "https://i.ibb.co/mr8Ts3bj/IMG-3713.jpg",
+    "https://i.ibb.co/212dc58G/IMG-3682.jpg",
+    "https://i.ibb.co/JFnRgvhn/IMG-2265.jpg",
+    "https://i.ibb.co/6RxyqmsJ/IMG-2259.jpg",
+    "https://i.ibb.co/N286QdRW/IMG-1840.jpg",
+    "https://i.ibb.co/6JqB9yNG/IMG-1167.jpg",
+    "https://i.ibb.co/sp4DqPVw/061a4f7e-769b-4a75-9093-cf1f3b7dfc33.jpg",
+    "https://i.ibb.co/fYdXsGmc/3d7ad99c-f7b5-4f91-ab90-059b6d784041.jpg",
+    "https://i.ibb.co/WNkmFts1/IMG-8588.jpg",
+    "https://i.ibb.co/PG42RPLX/IMG-8587.jpg",
+    "https://i.ibb.co/Ng6mBp3Q/3-FAA830-C-C295-4319-BEAA-A0-FEB5-BF62-AC.jpg",
+    "https://i.ibb.co/JWgtvPLJ/939b3a43-cfeb-4486-a9b0-dc0daca955eb.jpg",
+    "https://i.ibb.co/qYyk5Cgd/IMG-4088.jpg",
+    "https://i.ibb.co/Kpm8Lf4x/IMG-4085.jpg",
+    "https://i.ibb.co/nNRG3vCc/IMG-2256.jpg",
+    "https://i.ibb.co/chs0BxfP/IMG-2263.jpg",
+    "https://i.ibb.co/dYgJZqF/IMG-1109.jpg",
+    "https://i.ibb.co/xq4WJQvD/3293e8ec-0ace-4f9b-a5b8-198f2957542e.jpg",
+    "https://i.ibb.co/BKjPRcdc/95648506-2903-4483-8b76-ee72e99a6cf3.jpg"
+  ];
+
+  sorryBtn.onclick = () => {
+    main.classList.add('hidden');
+    giftContainer.classList.remove('hidden');
+  };
+
+  readyBtn.onclick = () => {
+    giftContainer.classList.add('hidden');
+    finalContainer.classList.remove('hidden');
+    showFirecracker();
+    music.play();
+
+    imageUrls.forEach((url, i) => {
+      setTimeout(() => {
+        const img = document.createElement('img');
+        img.src = url;
+        const [x, y] = coords[i];
+        img.style.left = x + 'px';
+        img.style.top = y + 'px';
+        img.style.animationDelay = (i * 0.2) + 's';
+        heartShape.appendChild(img);
+
+        // Letter-by-letter message
+        if (i < "I love you sweetheart forever".length) {
+          text.innerHTML += `<span style="animation: glow 1s ease ${i * 0.1}s forwards; opacity: 0;">${"I love you sweetheart forever"[i]}</span>`;
+        }
+      }, i * 250);
+    });
+  };
+</script>
+</body>
+</html>
